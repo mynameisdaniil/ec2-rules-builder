@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+    endpoint: "https://ec2.\{{default_region}}.amazonaws.com"
+  tasks:
+    {{#each this}}
+    - name: {{@key}}
+      ec2_group:
+        name        : {{@key}}
+        description : {{this.description}}
+        ec2_url     : "\{{endpoint}}"
+        {{#if this.in}}
+        rules:
+          {{#each this.in}}
+          - proto     : {{this.protocol}}
+            from_port : {{this.from}}
+            to_port   : {{this.to}}
+            {{#if this.group}}
+            group_name: {{this.address}}
+            {{else}}
+            cidr_ip   : {{this.address}}
+            {{/if}}
+            {{#if this.description}}
+            group_desc: {{this.description}}
+            {{/if}}
+          {{/each}}
+        {{/if}}
+        {{#if this.out}}
+        rules_egress:
+          {{#each this.out}}
+          - proto     : {{this.protocol}}
+            from_port : {{this.from}}
+            to_port   : {{this.to}}
+            {{#if this.group}}
+            group_name: {{this.address}}
+            {{else}}
+            cidr_ip   : {{this.address}}
+            {{/if}}
+            {{#if this.description}}
+            group_desc: {{this.description}}
+            {{/if}}
+          {{/each}}
+        {{/if}}
+    {{/each}}
